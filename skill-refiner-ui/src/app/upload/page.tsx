@@ -1,24 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import toast from 'react-hot-toast';
 
-export default function UploadPage() {
+export default function ResumeUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [feedback, setFeedback] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+
+    if (!file) return toast.error('Please upload a file');
+    setLoading(true);
+    toast.loading('Uploading and generating feedback...');
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('email', email);
-
-    setLoading(true);
+    formData.append('email', email || 'anonymous@demo.com');
 
     try {
       const res = await fetch('http://localhost:3001/tasks/upload', {
@@ -27,40 +27,49 @@ export default function UploadPage() {
       });
 
       const data = await res.json();
-      setResult(data);
-    } catch (err) {
-      console.error('Error uploading:', err);
+
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+
+      setFeedback(data.feedback?.content || '');
+      toast.dismiss();
+      toast.success('Feedback generated successfully!');
+    } catch (err: any) {
+      toast.dismiss();
+      toast.error(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Upload Resume</h1>
+    <div className="max-w-xl mx-auto mt-10 p-4 border rounded-lg shadow">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
+        <input
           type="email"
-          placeholder="Your email"
+          placeholder="Enter your email"
+          className="w-full border p-2 rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
-        <Input
+        <input
           type="file"
           accept=".pdf,.docx"
+          className="w-full border p-2 rounded"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
-          required
         />
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Uploading...' : 'Submit'}
-        </Button>
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          disabled={loading}
+        >
+          {loading ? 'Processing...' : 'Upload & Generate Feedback'}
+        </button>
       </form>
 
-      {result && (
-        <div className="mt-6 p-4 border rounded bg-muted text-sm">
-          <h2 className="font-semibold mb-2">AI Feedback:</h2>
-          <p>{result?.feedback?.content}</p>
+      {feedback && (
+        <div className="mt-6 whitespace-pre-line bg-gray-100 p-4 rounded text-sm">
+          <h2 className="font-bold mb-2">Feedback:</h2>
+          <p>{feedback}</p>
         </div>
       )}
     </div>

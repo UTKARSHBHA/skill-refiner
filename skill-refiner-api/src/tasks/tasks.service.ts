@@ -19,6 +19,9 @@ export class TasksService {
   async findAll() {
     return this.prisma.task.findMany({
       orderBy: { createdAt: 'desc' },
+      include: {
+        feedbacks: true, // 👈 this adds the feedbacks
+      },
     });
   }
 
