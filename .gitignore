@@ -57,3 +57,31 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
 .prisma/
+
+# Node.js
+node_modules/
+dist/
+build/
+
+# Logs
+logs
+*.log
+
+# dotenv
+.env
+.env.*.local
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Coverage/test
+coverage/
+.nyc_output/
+
+# OS junk
+.DS_Store
+
+# Next.js
+.next/
+out/
